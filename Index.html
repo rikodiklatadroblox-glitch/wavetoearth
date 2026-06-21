@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>wave to earth — seasons</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Playfair+Display:ital,wght@1,500;1,600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0d111a;
+            color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Efek cahaya latar belakang */
+        .bg-glow {
+            position: absolute;
+            width: 140%;
+            height: 140%;
+            background: radial-gradient(circle, rgba(147, 197, 253, 0.06) 0%, rgba(99, 102, 241, 0.03) 60%, transparent 100%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* --- STYLE SCREEN (UMUM) --- */
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0d111a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+            padding: 20px;
+        }
+
+        .screen.hide {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-15px);
+        }
+
+        /* --- SCREEN 1: FOTO PROFIL --- */
+        .welcome-photo-wrapper {
+            width: 105px;
+            height: 105px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .welcome-photo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .welcome-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-style: italic;
+            color: #ffffff;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .welcome-subtitle {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* --- TOMBOL UMUM --- */
+        .btn-open, .btn-next {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 12px 35px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 100px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+            z-index: 10;
+            outline: none;
+        }
+
+        .btn-open:active, .btn-next:active {
+            background: #ffffff;
+            color: #0d111a;
+            transform: scale(0.98);
+        }
+
+        /* --- SCREEN 2: LAGU & CONTAINER UTAMA --- */
+        .container {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 25px 15px;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Vinyl animasi piringan hitam pengganti video youtube */
+        .vinyl-wrapper {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #242834 20%, #080a0f 21%, #080a0f 100%);
+            margin: 0 auto 25px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            animation: putar 8s linear infinite;
+            animation-play-state: paused; /* Jalan pas musik main */
+            border: 4px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .vinyl-center {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #93c5fd;
+            border: 2px solid #080a0f;
+        }
+
+        @keyframes putar {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .track-info .title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .track-info .artist {
+            font-size: 11px;
+            color: #93c5fd;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .lyrics-display {
+            min-height: 95px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .lyric-eng {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            font-style: italic;
+            line-height: 1.4;
+            color: #f1f5f9;
+            transition: opacity 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .lyric-id {
+            font-size: 12px;
+            color: #64748b;
+            transition: opacity 0.2s;
+            line-height: 1.4;
+        }
+
+        .progress-indicator {
+            font-size: 10px;
+            color: #475569;
+            margin-top: 12px;
+            letter-spacing: 1px;
+        }
+
+        /* --- SCREEN 3: HALAMAN PASSWORD --- */
+        #passwordScreen {
+            z-index: 95;
+        }
+
+        .pass-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .pass-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #cbd5e1;
+            letter-spacing: 1px;
+        }
+
+        .input-pass {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 100px;
+            color: #ffffff;
+            text-align: center;
+            font-size: 15px;
+            outline: none;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .input-pass:focus {
+            border-color: #93c5fd;
+        }
+
+        .error-msg {
+            color: #f87171;
+            font-size: 11px;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* --- SCREEN 4: HALAMAN RAHASIA (KERTAS SURAT) --- */
+        #secretScreen {
+            z-index: 200;
+            background: #090d16;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 25px 15px;
+        }
+
+        .paper-scroll-container {
+            width: 100%;
+            max-width: 420px;
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            scrollbar-width: none;
+        }
+        .paper-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .paper-letter {
+            background: #fdfaf2;
+            color: #2d3748;
+            width: 100%;
+            padding: 30px 20px;
+            border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.04);
+            position: relative;
+            border-left: 3px solid #cbd5e1;
+        }
+
+        .paper-letter::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 35px;
+            width: 1px; height: 100%;
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .letter-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-style: italic;
+            color: #1a202c;
+            margin-bottom: 15px;
+            padding-left: 25px;
+        }
+
+        .letter-text {
+            font-size: 13.5px;
+            line-height: 2.1;
+            text-align: justify;
+            white-space: pre-line;
+            padding-left: 25px;
+            background-image: linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px);
+            background-size: 100% 2.1em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <audio id="laguSeasons" src="seasons.mp3" loop></audio>
+    <audio id="laguLove" src="love.mp3" loop></audio>
+
+    <div class="screen" id="welcomeScreen">
+        <div class="welcome-photo-wrapper">
+            <img src="foto_aing.jpg" alt="Foto Profil" id="profilePic">
+        </div>
+        <h2 class="welcome-title">A special note for you</h2>
+        <p class="welcome-subtitle">wave to earth — seasons</p>
+        <button class="btn-open" onclick="bukaLagu()">Open Website</button>
+    </div>
+
+    <div class="screen hide" id="musicScreen">
+        <div class="container" id="mainContainer">
+            
+            <div class="vinyl-wrapper" id="vinylDisc">
+                <div class="vinyl-center"></div>
+            </div>
+            
+            <div class="track-info">
+                <h1 class="title">Seasons</h1>
+                <div class="artist">wave to earth</div>
+            </div>
+
+            <div class="lyrics-display">
+                <p class="lyric-eng" id="engText">"I'll give you my all."</p>
+                <p class="lyric-id" id="idText">Aku akan memberikan seluruh duniaku untukmu B.</p>
+            </div>
+
+            <button class="btn-next" id="nextBtn" onclick="nextVerse()">Lanjutkan Lirik</button>
+            <div class="progress-indicator" id="progress">VERSE 1 / 6</div>
+        </div>
+    </div>
+
+    <div class="screen hide" id="passwordScreen">
+        <div class="pass-box">
+            <p class="pass-title">Masukkan Password Rahasia</p>
+            <input type="password" id="passInput" class="input-pass" placeholder="Ketik di sini..." autocomplete="off">
+            <p class="error-msg" id="errorMsg">Password salah, coba lagi ya!️ nama panggilan</p>
+            <button class="btn-open" style="padding: 10px 30px; font-size: 12px;" onclick="cekPassword()">Masuk</button>
+        </div>
+    </div>
+
+    <div class="screen hide" id="secretScreen">
+        <div class="paper-scroll-container">
+            <div class="paper-letter">
+                <h3 class="letter-title">Bilqis Clara Steviani-Rassya Putra Wiwaha</h3>
+                <p class="letter-text">
+                    Hai! sekarang pas kamu buka halaman ini bakal keputar otomatis Love-Wave To Earth.
+
+                   cuman mau bilang
+                   
+                    Walaupun kita telah menjadi dua manusia asing, tetap kejarlah cita-citamu yang selalu kamu ceritakan kepadaku. Semoga cita-citamu tercapai. Jikalau tidak tercapai, aku akan tetap menyemangatimu dari jauh. Dan jikalau tercapai, aku akan menjadi orang pertama yang mengapresiasi hasil dari kerja kerasmu dari jauh.
+
+                   Rassya pingin liat bilqis punya gelar S.Psi Semoga Bilqis bisa wujudin ya, rassya sedih pas tau bilqis ga keterima snbt sama snbp tapi gapapa bilqis 
+                   jangan sedih, di wakilin rassya aja sedih nya gapapa ga keterima snbp sama snbt masih ada jalan lain, terus juga kalo udaa masuk kuliah terus wisuda jangan lupa undang aku ya wisuda nya
+
+                   pas bilqis gagal snbp pingin rassya pingin banget buat semangatin bilqis tapi gabisa nanti "seorang lelaki di sebelah kamu marah sama aku" jangan lupa ya req an guitar aku mana belum wave to earth, ini aku nge codding nya bukan pake otak pakr perasaan ini ma 
+                    
+                    
+                </p>
+            </div>
+        </div>
+        <button class="btn-open" style="padding: 12px 40px; font-size: 13px; width: auto; margin: 0 auto;" onclick="location.reload()">Selesai & Keluar</button>
+    </div>
+
+    <script>
+        const PASSWORD_BENAR = "ata";
+
+        const seasonsLyrics = [
+            { eng: '"I\'ll give you my all."', id: "Aku akan memberikan seluruh duniaku untukmu B.", prog: "VERSE 1 / 6" },
+            { eng: '"Even the seasons change."', id: "Bahkan ketika musim-musim di dunia ini terus berganti I.", prog: "VERSE 2 / 6" },
+            { eng: '"My love stays the same."', id: "Perasaanku kepadamu akan selalu tetap sama, tak berkurang L.", prog: "VERSE 3 / 6" },
+            { eng: '"I can\'t be your left, so you take my right."', id: "Jika aku tak bisa mengisi seluruh harimu, dekap erat genggaman tanganku Q.", prog: "VERSE 4 / 6" },
+            { eng: '"’Cause I love you more than anyone else."', id: "Karena sejujurnya, aku mencintaimu jauh lebih besar dari siapa pun I.", prog: "VERSE 5 / 6" },
+            { eng: '"Pray for you all the time."', id:"Aku selalu mendoakanmu segala waktu S.", prog: "VERSE 6 / 6" }
+        ];
+
+        let index = 0;
+
+        // Screen 1 ke Screen 2 (Play Seasons MP3)
+        function bukaLagu() {
+            document.getElementById('welcomeScreen').classList.add('hide');
+            document.getElementById('musicScreen').classList.remove('hide');
+            
+            // Putar file seasons.mp3
+            const lagu1 = document.getElementById('laguSeasons');
+            lagu1.play();
+            document.getElementById('vinylDisc').style.animationPlayState = 'running';
+        }
+
+        // Jalannya lirik di Screen 2
+        function nextVerse() {
+            const engText = document.getElementById('engText');
+            const idText = document.getElementById('idText');
+            const progress = document.getElementById('progress');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (index === seasonsLyrics.length - 1) {
+                // Matikan lagu seasons.mp3
+                const lagu1 = document.getElementById('laguSeasons');
+                lagu1.pause();
+                lagu1.currentTime = 0;
+                
+                document.getElementById('musicScreen').classList.add('hide');
+                document.getElementById('passwordScreen').classList.remove('hide');
+                return;
+            }
+
+            engText.style.opacity = '0';
+            idText.style.opacity = '0';
+            
+            setTimeout(() => {
+                index++;
+                engText.innerText = seasonsLyrics[index].eng;
+                idText.innerText = seasonsLyrics[index].id;
+                progress.innerText = seasonsLyrics[index].prog;
+                
+                engText.style.opacity = '1';
+                idText.style.opacity = '1';
+                if (index === seasonsLyrics.length - 1) {
+                    nextBtn.innerText = "Kunci Halaman Rahasia 🔒";
+                }
+            }, 250);
+        }
+
+        // Logika verifikasi Password Screen 3 ke Screen 4 (Play Love MP3)
+        function cekPassword() {
+            const inputan = document.getElementById('passInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (inputan.toLowerCase() === PASSWORD_BENAR.toLowerCase()) {
+                document.getElementById('passwordScreen').classList.add('hide');
+                document.getElementById('secretScreen').classList.remove('hide');
+                
+                // Putar file love.mp3
+                document.getElementById('laguLove').play();
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('passInput').value = "";
+            }
+        }
+    </script>
+</body>
+</html>
